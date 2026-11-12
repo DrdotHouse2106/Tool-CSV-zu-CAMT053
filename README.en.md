@@ -18,7 +18,7 @@ macOS: set your IBAN in `camt-umwandeln.command`, then double-click it or drop C
 
 ## CSV columns
 
-`date` (required: `10.11.2026`, `10.11.26` or `2026-11-10`), `value_date`, `amount` (required: `119,00`, `1.234,56`, `1234.56`, `-49,90`), `debit_credit` (`c` = credit, `d` = debit; empty = sign of amount), `partner_name`, `partner_iban`, `remittance_info`, `reference`. Delimiter `,` or `;`. See `beispiel.csv` and `beispiel-camt.xml`.
+`date` (required: `10.11.2026`, `10.11.26` or `2026-11-10`), `value_date`, `amount` (required: `119,00`, `1.234,56`, `1234.56`, `-49,90`), `debit_credit` (`c` = credit, `d` = debit; empty = sign of amount), `partner_name`, `partner_iban`, `remittance_info`, `reference`, `fee` (fee deducted from the amount, e.g. SumUp/PayPal: entry is booked net, gross amount and charges are included as `AmtDtls`/`Chrgs`). Delimiter `,` or `;`. See `beispiel.csv` and `beispiel-camt.xml`.
 
 ## License
 

@@ -39,13 +39,14 @@ Trennzeichen `,` oder `;`, Kodierung UTF-8 oder Windows-1252. Erste Zeile mit Sp
 | `partner_iban` | | Wird nur übernommen, wenn die IBAN gültig ist |
 | `remittance_info` | | Verwendungszweck |
 | `reference` | | End-to-End-Referenz |
+| `fee` | | Gebühr, die vom Betrag abgezogen wurde (z. B. SumUp, PayPal). Die Buchung steht netto im Auszug, Bruttobetrag (`AmtDtls`) und Gebühr (`Chrgs`) werden mitgeliefert, im Zweck steht „\| Gebühr 3,20 EUR“ |
 
 Siehe `beispiel.csv` (eine Haben- und eine Soll-Buchung) und das Ergebnis `beispiel-camt.xml`.
 
 ## Hinweise
 
 - Jede Buchung bekommt eine feste Referenz (`AcctSvcrRef`), die sich aus Datum, Betrag, Partner und Zweck ergibt. Bei erneutem Umwandeln derselben CSV bleibt sie gleich, so kann die Buchhaltung Dubletten erkennen.
-- Gebühren werden nicht gesondert behandelt. Sie gehören als eigene Zeile in die CSV.
+- Beim Import in weclapp wird das Konto in den Banktransaktionen ausgewählt. Die IBAN im Auszug ist dabei offenbar zweitrangig.
 
 ## Lizenz
 

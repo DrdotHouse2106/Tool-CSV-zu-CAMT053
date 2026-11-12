@@ -35,7 +35,9 @@ def lesen(pfad):
         b = betrag(r.get("amount"))
         dc = r.get("debit_credit", "").upper()
         haben = dc == "C" if dc in ("C", "D") else b >= 0
-        zeilen.append(dict(r, betrag=abs(b), haben=haben, buch=datum(r["date"]),
+        gebuehr = abs(betrag(r.get("fee")))
+        netto = abs(b) - gebuehr if haben else abs(b) + gebuehr
+        zeilen.append(dict(r, brutto=abs(b), gebuehr=gebuehr, betrag=netto, haben=haben, buch=datum(r["date"]),
                            valuta=datum(r.get("value_date") or r["date"])))
     if not zeilen: sys.exit("Keine Buchungen in der CSV.")
     return sorted(zeilen, key=lambda z: z["buch"])
@@ -51,6 +53,11 @@ def saldo(cd, wert, waehrung, tag):
 def buchung(z, waehrung):
     e = lambda s: escape(s[:140])
     ref = hashlib.sha1(f"{z['buch']}|{z['betrag']}|{z['haben']}|{z.get('partner_name')}|{z.get('remittance_info')}".encode()).hexdigest()[:16].upper()
+    w, g = waehrung, z["gebuehr"]
+    gebuehr = x("Chrgs", x("TtlChrgsAndTaxAmt", f"{g:.2f}", Ccy=w) + x("Rcrd", x("Amt", f"{g:.2f}", Ccy=w)
+                + x("CdtDbtInd", "DBIT") + x("ChrgInclInd", "true"))) if g else ""
+    brutto = x("AmtDtls", x("InstdAmt", x("Amt", f"{z['brutto']:.2f}", Ccy=w)) + x("TxAmt", x("Amt", f"{z['betrag']:.2f}", Ccy=w))) if g else ""
+    zweck = z.get("remittance_info", "") + (f" | Gebühr {g:.2f} {w}".replace(".", ",") if g else "")
     rolle = "Dbtr" if z["haben"] else "Cdtr"
     partei = ""
     if z.get("partner_name"):
@@ -58,13 +65,13 @@ def buchung(z, waehrung):
     if iban_ok(z.get("partner_iban")):
         partei += x(rolle + "Acct", x("Id", x("IBAN", z["partner_iban"].replace(" ", "").upper())))
     details = (x("Refs", x("AcctSvcrRef", ref) + (x("EndToEndId", e(z["reference"])) if z.get("reference") else ""))
-               + (x("RltdPties", partei) if partei else "")
-               + (x("RmtInf", x("Ustrd", e(z["remittance_info"]))) if z.get("remittance_info") else ""))
+               + brutto + gebuehr + (x("RltdPties", partei) if partei else "")
+               + (x("RmtInf", x("Ustrd", e(zweck.strip(" |")))) if zweck.strip(" |") else ""))
     return x("Ntry", x("Amt", f"{z['betrag']:.2f}", Ccy=waehrung) + x("CdtDbtInd", "CRDT" if z["haben"] else "DBIT")
              + x("Sts", x("Cd", "BOOK")) + x("BookgDt", x("Dt", z["buch"].isoformat()))
              + x("ValDt", x("Dt", z["valuta"].isoformat())) + x("AcctSvcrRef", ref)
              + x("BkTxCd", x("Domn", x("Cd", "PMNT") + x("Fmly", x("Cd", "RCDT" if z["haben"] else "ICDT") + x("SubFmlyCd", "ESCT"))))
-             + x("NtryDtls", x("TxDtls", details)))
+             + brutto + gebuehr + x("NtryDtls", x("TxDtls", details)))
 
 def main():
     p = argparse.ArgumentParser(description="CSV -> CAMT.053 für weclapp")
