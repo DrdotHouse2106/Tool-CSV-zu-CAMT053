@@ -1,0 +1,3 @@
+date,value_date,amount,currency,debit_credit,reference,partner_name,partner_iban,remittance_info,fee
+10.11.2026,,"119,00",EUR,c,,Muster GmbH,DE02120300000000202051,Rechnung 2026RE0001,
+11.11.2026,,"49,90",EUR,d,,Lieferant Beispiel AG,DE02500105170137075030,Lieferantenrechnung 4711,
